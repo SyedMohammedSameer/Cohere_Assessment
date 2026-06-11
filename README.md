@@ -7,6 +7,12 @@ a test suite that runs offline with no API key.
 
 The sections below answer the four questions from the assignment.
 
+## Demo
+
+https://github.com/user-attachments/assets/6c51aeeb-4a85-4262-a52e-04a2f41e5765
+
+
+
 ## 1. Getting started
 
 Requires Python 3.10 or newer (tested on 3.12); the frontend needs Node 20+.
