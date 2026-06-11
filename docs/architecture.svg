@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 588" role="img" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <title>Cohere Chat system architecture</title>
+  <desc>Layered architecture: clients call a FastAPI app (middleware, routes, services) that reaches the Cohere API, MediaWiki API, and SQLite through resilient clients and a repository.</desc>
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+      <path d="M0,0 L6.5,3 L0,6 z" fill="#7d8590"/>
+    </marker>
+    <symbol id="ic-win" viewBox="0 0 18 18"><rect x="1.5" y="3" width="15" height="11.5" rx="1.6" fill="none" stroke="#8b949e" stroke-width="1.3"/><line x1="1.5" y1="6.4" x2="16.5" y2="6.4" stroke="#8b949e" stroke-width="1.3"/><circle cx="4.2" cy="4.7" r="0.7" fill="#8b949e"/></symbol>
+    <symbol id="ic-conv" viewBox="0 0 18 18"><path d="M2 3.6h11.2a1.7 1.7 0 0 1 1.7 1.7v4.6a1.7 1.7 0 0 1-1.7 1.7H6.6L3.4 15v-2.4H2A1.7 1.7 0 0 1 .3 10.9V5.3A1.7 1.7 0 0 1 2 3.6z" fill="none" stroke="#cdd6e0" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+    <symbol id="ic-loop" viewBox="0 0 18 18"><path d="M3.4 7.2A5.6 5.6 0 0 1 14 5.9" fill="none" stroke="#cdd6e0" stroke-width="1.3"/><path d="M14.6 10.9A5.6 5.6 0 0 1 4 12.2" fill="none" stroke="#cdd6e0" stroke-width="1.3"/><path d="M13 3.4l1.3 2.6-2.8.2z" fill="#cdd6e0"/><path d="M5 14.6l-1.3-2.6 2.8-.2z" fill="#cdd6e0"/></symbol>
+    <symbol id="ic-db" viewBox="0 0 18 18"><ellipse cx="9" cy="4.3" rx="6.2" ry="2.3" fill="none" stroke="#9aa4b2" stroke-width="1.3"/><path d="M2.8 4.3V13.7A6.2 2.3 0 0 0 15.2 13.7V4.3" fill="none" stroke="#9aa4b2" stroke-width="1.3"/><path d="M2.8 9A6.2 2.3 0 0 0 15.2 9" fill="none" stroke="#9aa4b2" stroke-width="1.3"/></symbol>
+    <symbol id="ic-dbg" viewBox="0 0 18 18"><ellipse cx="9" cy="4.3" rx="6.2" ry="2.3" fill="none" stroke="#3fb950" stroke-width="1.3"/><path d="M2.8 4.3V13.7A6.2 2.3 0 0 0 15.2 13.7V4.3" fill="none" stroke="#3fb950" stroke-width="1.3"/><path d="M2.8 9A6.2 2.3 0 0 0 15.2 9" fill="none" stroke="#3fb950" stroke-width="1.3"/></symbol>
+    <symbol id="ic-wiki" viewBox="0 0 18 18"><circle cx="9" cy="9" r="6.6" fill="none" stroke="#58a6ff" stroke-width="1.3"/><ellipse cx="9" cy="9" rx="2.7" ry="6.6" fill="none" stroke="#58a6ff" stroke-width="1.3"/><line x1="2.4" y1="9" x2="15.6" y2="9" stroke="#58a6ff" stroke-width="1.3"/></symbol>
+    <symbol id="ic-cohere" viewBox="0 0 24 24"><path d="M8.128 14.099c.592 0 1.77-.033 3.398-.703 1.897-.781 5.672-2.2 8.395-3.656 1.905-1.018 2.74-2.366 2.74-4.18A4.56 4.56 0 0018.1 1H7.549A6.55 6.55 0 001 7.55c0 3.617 2.745 6.549 7.128 6.549z" fill="#39594D"/><path d="M9.912 18.61a4.387 4.387 0 012.705-4.052l3.323-1.38c3.361-1.394 7.06 1.076 7.06 4.715a5.104 5.104 0 01-5.105 5.104l-3.597-.001a4.386 4.386 0 01-4.386-4.387z" fill="#D18EE2"/><path d="M4.776 14.962A3.775 3.775 0 001 18.738v.489a3.776 3.776 0 007.551 0v-.49a3.775 3.775 0 00-3.775-3.775z" fill="#FF7759"/></symbol>
+    <style>
+      .bg{fill:#0d1117}
+      .title{fill:#e6edf3;font-size:17px;font-weight:600}
+      .sub{fill:#8b949e;font-size:12px}
+      .node{fill:#1b2230;stroke:#3a4556;stroke-width:1.2}
+      .strip{fill:#141a24;stroke:#2b3340;stroke-width:1}
+      .nt{fill:#e6edf3;font-size:13px;font-weight:600}
+      .ns{fill:#8b949e;font-size:10.5px}
+      .blabel{fill:#ff7759;font-size:11px;font-weight:600}
+      .note{fill:#6e7681;font-size:10.5px}
+      .stripL{fill:#e6edf3;font-size:12px;font-weight:700}
+      .stripT{fill:#9aa4b2;font-size:11.5px}
+      .flow{stroke:#7d8590;stroke-width:1.7;fill:none;marker-end:url(#arr);stroke-dasharray:5 5;animation:flow .95s linear infinite}
+      @keyframes flow{to{stroke-dashoffset:-20}}
+      .appbox{fill:none;stroke:#ff7759;stroke-width:1.6;animation:pulse 3.2s ease-in-out infinite}
+      @keyframes pulse{0%,100%{stroke-opacity:1}50%{stroke-opacity:.5}}
+      @media (prefers-reduced-motion:reduce){.flow,.appbox{animation:none}}
+      .extc{fill:#2a1712;stroke:#ff7759;stroke-width:1.4}
+      .extw{fill:#0e1f36;stroke:#58a6ff;stroke-width:1.4}
+      .extd{fill:#0f2018;stroke:#3fb950;stroke-width:1.4}
+      .ect{fill:#ffb4a1;font-size:12.5px;font-weight:600}
+      .ewt{fill:#a9d2ff;font-size:12.5px;font-weight:600}
+      .edt{fill:#9ee2af;font-size:12.5px;font-weight:600}
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="880" height="588"/>
+  <text class="title" x="28" y="30">Cohere Chat: System Architecture</text>
+  <text class="sub" x="28" y="49">Async FastAPI · Wikipedia-grounded tool loop · streaming · SQLite</text>
+
+  <rect class="node" x="300" y="66" width="200" height="40" rx="10"/>
+  <use href="#ic-win" x="316" y="77" width="18" height="18"/>
+  <text class="nt" x="342" y="91">React SPA</text>
+  <rect class="node" x="520" y="66" width="200" height="40" rx="10"/>
+  <use href="#ic-win" x="536" y="77" width="18" height="18"/>
+  <text class="nt" x="562" y="91">API client (curl)</text>
+  <path class="flow" d="M400,106 L400,138"/>
+  <path class="flow" d="M620,106 L620,138"/>
+  <text class="note" x="510" y="126" text-anchor="middle">HTTPS · SSE</text>
+
+  <rect class="appbox" x="30" y="142" width="820" height="344" rx="14"/>
+  <text class="blabel" x="46" y="164">FastAPI application</text>
+
+  <rect class="strip" x="46" y="178" width="788" height="36" rx="9"/>
+  <text x="62" y="201"><tspan class="stripL">Middleware</tspan><tspan class="stripT">    request-id  ·  rate limit  ·  error envelope  ·  API-key auth</tspan></text>
+  <path class="flow" d="M440,214 L440,246"/>
+
+  <rect class="strip" x="46" y="246" width="788" height="36" rx="9"/>
+  <text x="62" y="269"><tspan class="stripL">Routes</tspan><tspan class="stripT">    POST /chat  ·  /chat/stream  ·  /history  ·  /conversations  ·  /health</tspan></text>
+  <path class="flow" d="M228,282 L228,314"/>
+
+  <rect class="node" x="46" y="314" width="364" height="62" rx="11"/>
+  <use href="#ic-conv" x="62" y="337" width="18" height="18"/>
+  <text class="nt" x="90" y="342">ConversationService</text>
+  <text class="ns" x="90" y="360">load · persist · short transactions</text>
+  <rect class="node" x="452" y="314" width="382" height="62" rx="11"/>
+  <use href="#ic-loop" x="468" y="337" width="18" height="18"/>
+  <text class="nt" x="496" y="342">ChatService</text>
+  <text class="ns" x="496" y="360">grounded multi-turn tool loop</text>
+  <path class="flow" d="M410,345 L452,345"/>
+
+  <path class="flow" d="M228,376 L228,414"/>
+  <path class="flow" d="M548,376 L548,414"/>
+  <path class="flow" d="M749,376 L749,414"/>
+
+  <rect class="node" x="46" y="414" width="364" height="62" rx="11"/>
+  <use href="#ic-db" x="62" y="437" width="18" height="18"/>
+  <text class="nt" x="90" y="442">Repository</text>
+  <text class="ns" x="90" y="460">SQLAlchemy (async)</text>
+  <rect class="node" x="452" y="414" width="192" height="62" rx="11"/>
+  <use href="#ic-cohere" x="468" y="436" width="19" height="19"/>
+  <text class="nt" x="496" y="442">CohereClient</text>
+  <text class="ns" x="496" y="460">streaming · retries</text>
+  <rect class="node" x="664" y="414" width="170" height="62" rx="11"/>
+  <use href="#ic-wiki" x="680" y="437" width="18" height="18"/>
+  <text class="nt" x="708" y="442">WikipediaClient</text>
+  <text class="ns" x="708" y="460">TTL cache · retries</text>
+
+  <path class="flow" d="M228,476 L228,512"/>
+  <path class="flow" d="M548,476 L548,512"/>
+  <path class="flow" d="M749,476 L749,512"/>
+
+  <rect class="extd" x="134" y="512" width="188" height="46" rx="11"/>
+  <use href="#ic-dbg" x="150" y="526" width="18" height="18"/>
+  <text class="edt" x="178" y="540">SQLite (WAL)</text>
+  <rect class="extc" x="454" y="512" width="188" height="46" rx="11"/>
+  <use href="#ic-cohere" x="470" y="525" width="19" height="19"/>
+  <text class="ect" x="498" y="540">Cohere Chat v2 API</text>
+  <rect class="extw" x="655" y="512" width="188" height="46" rx="11"/>
+  <use href="#ic-wiki" x="671" y="526" width="18" height="18"/>
+  <text class="ewt" x="699" y="540">MediaWiki Search API</text>
+</svg>
