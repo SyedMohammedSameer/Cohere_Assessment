@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #0a0b0e;
+  --color-panel: #121317;
+  --color-panel-2: #191b21;
+  --color-line: rgba(255, 255, 255, 0.07);
+  --color-ink: #e7e8ea;
+  --color-ink-dim: #9a9ca3;
+  --color-accent: #ff7759;
+  --color-accent-soft: rgba(255, 119, 89, 0.14);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface text-ink antialiased;
+}
+
+/* Blinking caret shown at the end of a streaming answer. */
+.caret {
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--color-accent);
+  border-radius: 1px;
+  animation: caret-blink 0.9s steps(2, start) infinite;
+}
+
+@keyframes caret-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* Cited spans in answers loaded from history. */
+.cited {
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 119, 89, 0.55);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+/* Slim, unobtrusive scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
