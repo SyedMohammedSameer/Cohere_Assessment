@@ -66,6 +66,10 @@ def tool_delta() -> SimpleNamespace:
     )
 
 
+def tool_plan(text: str) -> SimpleNamespace:
+    return _event("tool-plan-delta", SimpleNamespace(message=SimpleNamespace(tool_plan=text)))
+
+
 def citation() -> SimpleNamespace:
     return _event(
         "citation-start",
@@ -135,6 +139,8 @@ def test_is_retryable_predicate():
 
 async def test_chat_stream_assembles_text_tool_calls_usage_and_citations():
     events = [
+        tool_plan("I'll search "),
+        tool_plan("Wikipedia."),
         content("Buzz "),
         content("Aldrin."),
         tool_start(),
@@ -155,6 +161,7 @@ async def test_chat_stream_assembles_text_tool_calls_usage_and_citations():
     assert final.input_tokens == 12 and final.output_tokens == 4
     assert final.tool_calls[0].name == "search_wikipedia"
     assert final.tool_calls[0].arguments == '{"query":"x"}'
+    assert final.tool_plan == "I'll search Wikipedia."  # captured, not streamed
     assert final.citations[0].source_ids == ["440"]
     assert final.citations[0].text == "Buzz"
 

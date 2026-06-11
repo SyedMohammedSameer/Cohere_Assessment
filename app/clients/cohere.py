@@ -171,6 +171,7 @@ class CohereClient:
         while True:
             attempt += 1
             text_parts: list[str] = []
+            tool_plan_parts: list[str] = []
             tool_calls: dict[int, dict[str, Any]] = {}
             citations: list[Citation] = []
             finish_reason: str | None = None
@@ -195,6 +196,11 @@ class CohereClient:
                             text_parts.append(text)
                             emitted = True
                             yield StreamTextDelta(text=text)
+                    elif event_type == "tool-plan-delta":
+                        # The model's reasoning before a tool call.
+                        plan = _nested(event, "delta", "message", "tool_plan")
+                        if plan:
+                            tool_plan_parts.append(plan)
                     elif event_type == "tool-call-start":
                         _begin_tool_call(tool_calls, event)
                     elif event_type == "tool-call-delta":
@@ -239,6 +245,7 @@ class CohereClient:
                     for call in tool_calls.values()
                     if call["id"] and call["name"]
                 ],
+                tool_plan="".join(tool_plan_parts) or None,
                 citations=citations,
             )
             logger.info(
